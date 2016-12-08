@@ -32,7 +32,13 @@ if needs_build_package ; then
 
   GFLAGS_BUILD=$BUILD_DIR/gflags-$GFLAGS_VERSION
 
+if [[ "$(uname -p)" == "ppc"* ]]; then
+  wrap ./configure \
+    --build=powerpc64le-unknown-linux-gnu \
+    --with-gflags=$GFLAGS_BUILD --with-pic --prefix=$LOCAL_INSTALL
+else
   wrap ./configure --with-gflags=$GFLAGS_BUILD --with-pic --prefix=$LOCAL_INSTALL
+fi
   wrap make -j${BUILD_THREADS:-4} install
 
   footer $PACKAGE $PACKAGE_VERSION

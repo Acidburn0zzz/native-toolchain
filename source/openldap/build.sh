@@ -30,7 +30,11 @@ download_dependency $PACKAGE "${PACKAGE_STRING}.tgz" $THIS_DIR
 if needs_build_package ; then
   header $PACKAGE $PACKAGE_VERSION
 
+if [[ "$(uname -p)" == "ppc"* ]]; then
+  wrap ./configure --build=powerpc64le-unknown-linux-gnu --enable-slapd=no --enable-static --with-pic --prefix=$LOCAL_INSTALL
+else
   wrap ./configure --enable-slapd=no --enable-static --with-pic --prefix=$LOCAL_INSTALL
+fi
   wrap make -j${BUILD_THREADS:-4} install
   wrap make -j${BUILD_THREADS:-4} depend
   wrap make -j${BUILD_THREADS:-4} install

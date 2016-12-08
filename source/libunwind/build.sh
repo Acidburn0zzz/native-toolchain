@@ -30,7 +30,13 @@ download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
 if needs_build_package ; then
   header $PACKAGE $PACKAGE_VERSION
 
+if [[ "$(uname -p)" == "ppc"* ]]; then
+  echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $THIS_DIR/$PACKAGE-$PACKAGE_VERSION/tests/Makefile.am
+  autoreconf -i
+  wrap ./configure --build=powerpc64le-unknown-linux-gnu -disable-minidebuginfo --with-pic --prefix=$LOCAL_INSTALL
+else
   wrap ./configure -disable-minidebuginfo --with-pic --prefix=$LOCAL_INSTALL
+fi
   wrap make -j${BUILD_THREADS:-4} install
 
   footer $PACKAGE $PACKAGE_VERSION
