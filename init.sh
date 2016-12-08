@@ -134,7 +134,7 @@ export COMPILER_VERSION
 
 # ARCH_FLAGS are used to convey architectur dependent flags that should
 # be obbeyed by libraries explicitly needing this information.
-ARCH_FLAGS="-mno-avx2"
+ARCH_FLAGS="-mvsx -maltivec"
 
 # Check Platform and build the correct release name. The RELEASE_NAME is used
 # when publishing the artifacts to the artifactory.
