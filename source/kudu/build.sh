@@ -78,55 +78,78 @@ function build {
   prepare $THIS_DIR
 
   cd $THIS_DIR
-  download_url https://github.com/apache/kudu/archive/$KUDU_VERSION.tar.gz \
-      kudu-$KUDU_VERSION.tar.gz
-
+ 
+  if [[ "$(uname -p)" == "ppc"* ]]; then
+     git clone https://github.com/ibmsoe/kudu 
+     echo "Building Kudu"  #TODO: uses header here
+     cd kudu
+  else
+     download_url https://github.com/apache/kudu/archive/$KUDU_VERSION.tar.gz \
+        kudu-$KUDU_VERSION.tar.gz
+     # If the version is a git hash, the name of the root dir in the archive includes the
+     # full hash even if an abbreviated hash was given through the download URL. The
+     # difference would lead to a mismatch in expected vs actual dir name after extraction.
+     # So the extracted root dir name will be found by inspection.
+     EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$KUDU_VERSION.tar.gz)
+     if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
+       echo Failed to find the name of the root folder in the Kudu tarball. The search \
+           command output was: "'$EXTRACTED_DIR_NAME'".
+       exit 1
+     fi
+     header $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
+  fi
+ 
   if ! needs_build_package; then
     return
   fi
 
-  # If the version is a git hash, the name of the root dir in the archive includes the
-  # full hash even if an abbreviated hash was given through the download URL. The
-  # difference would lead to a mismatch in expected vs actual dir name after extraction.
-  # So the extracted root dir name will be found by inspection.
-  EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$KUDU_VERSION.tar.gz)
-  if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
-    echo Failed to find the name of the root folder in the Kudu tarball. The search \
-        command output was: "'$EXTRACTED_DIR_NAME'".
-    exit 1
-  fi
-  header $PACKAGE $PACKAGE_VERSION kudu-$KUDU_VERSION.tar.gz $EXTRACTED_DIR_NAME
-
+ 
+  
   # Kudu's dependencies are not in the toolchain. They could be added later.
+  
   cd thirdparty
+
   # For some reason python 2.7 from Kudu's thirdparty doesn't build on CentOS 6. It's
   # not really needed since the toolchain provides python 2.7. To skip the thirdparty
   # build, "python2.7" needs to be in the PATH.
   OLD_PATH="$PATH"
   PATH="$BUILD_DIR/python-2.7.10/bin:$OLD_PATH"
-  wrap ./build-if-necessary.sh
+  ./build-if-necessary.sh
   cd ..
 
   # Update the PATH to include Kudu's toolchain binaries (after our toolchain's Python).
   KUDU_TP_PATH="`pwd`/thirdparty/installed/common/bin"
   PATH="$BUILD_DIR/python-2.7.10/bin:$KUDU_TP_PATH:$OLD_PATH"
-
+  
+  ####################building source code on ppc#######################
+  source $SOURCE_DIR/source/kudu/kudu-config.sh
+  if [[ $(uname -p) == 'ppc'* ]]; then
+    echo "Installing gcc-4.9.3 to build kudu src code on ppc"	
+    source $SOURCE_DIR/source/kudu/kudu-config.sh
+    export CC=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/gcc
+    export CXX=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/g++
+  else
   # The line below configures clang to find gcc from the toolchain. Without this the
   # build will still work on some systems but there will be strange crashes at runtime.
   # On other systems, such as default RHEL6, the build will fail because c++11 isn't
   # supported on the system gcc.
-  sed -i -r "s:^(set\(IR_FLAGS):\1\n  --gcc-toolchain=$(dirname $(which $CXX))/..:" \
+    sed -i -r "s:^(set\(IR_FLAGS):\1\n  --gcc-toolchain=$(dirname $(which $CXX))/..:" \
       src/kudu/codegen/CMakeLists.txt
-
+  fi
   # Now Kudu can be built.
+  if [[ $(uname -p) == 'ppc'* ]]; then
+    LOCAL_INSTALL=$SOURCE_DIR/build/kudu
+    BUILD_LOG=$SOURCE_DIR/check/kudu.log
+  fi
+    
   RELEASE_INSTALL_DIR="$LOCAL_INSTALL/release"
   mkdir -p release_build_dir
   pushd release_build_dir
-  wrap cmake \
+  cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DNO_TESTS=1 \
       -DCMAKE_INSTALL_PREFIX="$RELEASE_INSTALL_DIR" ..
-  wrap make -j$BUILD_THREADS
+  make -j$BUILD_THREADS
   install_kudu "$RELEASE_INSTALL_DIR"
   popd
 
@@ -134,19 +157,18 @@ function build {
   DEBUG_INSTALL_DIR="$LOCAL_INSTALL/debug"
   mkdir -p debug_build_dir
   pushd debug_build_dir
-  wrap cmake \
+  cmake \
       -DCMAKE_BUILD_TYPE=Debug \
       -DKUDU_LINK=static \
       -DNO_TESTS=1 \
       -DCMAKE_INSTALL_PREFIX="$DEBUG_INSTALL_DIR" ..
-  wrap make -j$BUILD_THREADS
+  make -j$BUILD_THREADS
   install_kudu "$DEBUG_INSTALL_DIR"
   popd
 
   cd $THIS_DIR
-  rm -rf $EXTRACTED_DIR_NAME kudu-$KUDU_VERSION.tar.gz
 
-  footer $PACKAGE $PACKAGE_VERSION
+  echo "Kudu build completed" 
 }
 
 # This should be called from the Kudu build dir.
@@ -154,7 +176,7 @@ function install_kudu {
   INSTALL_DIR=$1
 
   # This actually only installs the client.
-  wrap make install
+  make install
 
   # Install the binaries, but only the needed stuff. Ignore the test utilities. The list
   # of files below should match the files provided by a parcel.
