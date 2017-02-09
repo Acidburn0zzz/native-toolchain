@@ -24,10 +24,8 @@ source $SOURCE_DIR/functions.sh
 THIS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 prepare $THIS_DIR
 
-# Download the dependency from S3
-download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
-
 if needs_build_package ; then
+  download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
   header $PACKAGE $PACKAGE_VERSION
 
 if [[ "$(uname -p)" == "ppc"* ]]; then
