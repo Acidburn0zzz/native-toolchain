@@ -27,6 +27,7 @@ set -o pipefail
 #  - PRODUCTION
 #  - SYSTEM_GCC
 #  - CLEAN
+#  - CLEAN_TMP_AFTER_BUILD
 #  - RELEASE_NAME
 #  - MACOSX_DEPLOYMENT_TARGET -- only on Mac OS X
 #  - ARCH_FLAGS
@@ -49,9 +50,14 @@ export PUBLISH_DEPENDENCIES
 : ${PRODUCTION=1}
 export PRODUCTION
 
-# Clean the complete build
+# Clean the entire native-toolchain git repo before building.
 : ${CLEAN=0}
 export CLEAN
+
+# Clean the source/<package> directory after building each package
+# This significantly reduces the disk space required for the build.
+: ${CLEAN_TMP_AFTER_BUILD=0}
+export CLEAN_TMP_AFTER_BUILD
 
 : ${BINUTILS_VERSION=2.26-p1}
 export BINUTILS_VERSION
@@ -68,6 +74,18 @@ export SYSTEM_CMAKE
 
 : ${CMAKE_VERSION=3.2.3-p1}
 export CMAKE_VERSION
+
+: ${SYSTEM_AUTOTOOLS=0}
+export SYSTEM_AUTOTOOLS
+
+: ${AUTOCONF_VERSION=2.69}
+export AUTOCONF_VERSION
+
+: ${AUTOMAKE_VERSION=1.14.1}
+export AUTOMAKE_VERSION
+
+: ${LIBTOOL_VERSION=2.4.2}
+export LIBTOOL_VERSION
 
 # Determine the number of build threads
 BUILD_THREADS=$(getconf _NPROCESSORS_ONLN)
@@ -202,10 +220,8 @@ export RELEASE_NAME
 # OS X doesn't use binutils.
 if [[ "$OSTYPE" != "darwin"* ]]; then
   "$SOURCE_DIR"/source/binutils/build.sh
-  # Don't add binutils to the path. If it were added, consumers of toolchain artifacts
-  # might also need to use binutils from the toolchain if their system linker is too
-  # old. This way consumers have a choice of which linker to use. Maybe eventually
-  # consumers will be required to use the toolchain linker (or newer), but not yet.
+  # Add ld from binutils to the path so it'll be used.
+  PATH="$BUILD_DIR/binutils-$BINUTILS_VERSION/bin:$PATH"
 fi
 
 # Build and export toolchain cmake
@@ -217,4 +233,10 @@ if [[ $SYSTEM_CMAKE -eq 0 ]]; then
     CMAKE_BIN=$BUILD_DIR/cmake-$CMAKE_VERSION/bin/
     PATH=$CMAKE_BIN:$PATH
   fi
+fi
+
+if [[ ${SYSTEM_AUTOTOOLS} -eq 0 ]]; then
+  ${SOURCE_DIR}/source/autoconf/build.sh
+  ${SOURCE_DIR}/source/automake/build.sh
+  ${SOURCE_DIR}/source/libtool/build.sh
 fi

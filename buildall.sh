@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cleans and rebuilds thirdparty/. The Impala build environment must be set up
-# by bin/impala-config.sh before running this script.
-
 # Exit on non-true return value
 set -e
 # Exit on reference to uninitialized variable
@@ -41,7 +38,10 @@ source ./init.sh
 ################################################################################
 # Boost
 ################################################################################
-BOOST_VERSION=1.57.0 $SOURCE_DIR/source/boost/build.sh
+if (( BUILD_HISTORICAL )) ; then
+  BOOST_VERSION=1.57.0 $SOURCE_DIR/source/boost/build.sh
+fi
+BOOST_VERSION=1.57.0-p1 $SOURCE_DIR/source/boost/build.sh
 
 ################################################################################
 # Build Python
@@ -90,6 +90,22 @@ fi
 LIBEVENT_VERSION=1.4.15 $SOURCE_DIR/source/libevent/build.sh
 
 ################################################################################
+# Build protobuf
+################################################################################
+PROTOBUF_VERSION=2.6.1 $SOURCE_DIR/source/protobuf/build.sh
+
+################################################################################
+# Build libev
+################################################################################
+LIBEV_VERSION=4.20 $SOURCE_DIR/source/libev/build.sh
+
+################################################################################
+# Build crcutil
+################################################################################
+CRCUTIL_VERSION=440ba7babeff77ffad992df3a10c767f184e946e\
+  $SOURCE_DIR/source/crcutil/build.sh
+
+################################################################################
 # Build OpenSSL - this is not intended for production use of Impala.
 # Libraries that depend on OpenSSL will only use it if PRODUCTION=1.
 ################################################################################
@@ -106,7 +122,7 @@ ZLIB_VERSION=1.2.8 $SOURCE_DIR/source/zlib/build.sh
 #  * depends on libevent
 ################################################################################
 export LIBEVENT_VERSION=1.4.15
-export BOOST_VERSION=1.57.0
+export BOOST_VERSION=1.57.0-p1
 export ZLIB_VERSION=1.2.8
 export OPENSSL_VERSION=1.0.1p
 
@@ -121,7 +137,7 @@ if [[ ! "$OSTYPE" == "darwin"* ]]; then
   fi
   THRIFT_VERSION=0.9.0-p8 $SOURCE_DIR/source/thrift/build.sh
 else
-  BOOST_VERSION=1.57.0 THRIFT_VERSION=0.9.2-p2 $SOURCE_DIR/source/thrift/build.sh
+  THRIFT_VERSION=0.9.2-p2 $SOURCE_DIR/source/thrift/build.sh
 fi
 
 export -n LIBEVENT_VERSION
@@ -175,7 +191,10 @@ SNAPPY_VERSION=1.1.3 $SOURCE_DIR/source/snappy/build.sh
 ################################################################################
 # Build Lz4
 ################################################################################
-LZ4_VERSION=svn $SOURCE_DIR/source/lz4/build.sh
+if (( BUILD_HISTORICAL )); then
+    LZ4_VERSION=svn $SOURCE_DIR/source/lz4/build.sh
+fi
+LZ4_VERSION=1.7.5 $SOURCE_DIR/source/lz4/build.sh
 
 ################################################################################
 # Build re2
@@ -243,11 +262,15 @@ if [[ "$(uname -p)" == "ppc"* ]]; then
     fi
 else
 (
+  export BOOST_VERSION=1.57.0-p1
   export KUDU_VERSION=
   if (( BUILD_HISTORICAL )); then
-    KUDU_VERSIONS="0.8.0-RC1 0.9.0-RC1 0.10.0-RC1 1.0.0-RC1"
+    # The Kudu git hashes that are referenced here should not be changed because
+    # they end up in the output file names and are referenced by these 'versions'.
+    # Moving forward, we should stick to using 7-character prefixes when necessary.
+    KUDU_VERSIONS="0.8.0-RC1 0.9.0-RC1 0.10.0-RC1 1.0.0-RC1 f2aeba 60aa54e a70c905006 e018a83 cd7b0dd"
   fi
-  KUDU_VERSIONS+=" f2aeba"
+  KUDU_VERSIONS+=" b73a714"
   for KUDU_VERSION in $KUDU_VERSIONS
   do
     if $SOURCE_DIR/source/kudu/build.sh is_supported_platform; then
@@ -258,7 +281,6 @@ else
   done
 )
 fi
-
 # Build TPC-H
 ################################################################################
 TPC_H_VERSION=2.17.0 $SOURCE_DIR/source/tpc-h/build.sh

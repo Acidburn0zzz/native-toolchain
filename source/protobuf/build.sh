@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2015 Cloudera Inc.
+# Copyright 2016 Cloudera Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,17 +29,7 @@ download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
 
 if needs_build_package ; then
   header $PACKAGE $PACKAGE_VERSION
-
-  GFLAGS_BUILD=$BUILD_DIR/gflags-$GFLAGS_VERSION
-
-if [[ "$(uname -p)" == "ppc"* ]]; then
-  wrap ./configure \
-    --build=powerpc64le-unknown-linux-gnu \
-    --with-gflags=$GFLAGS_BUILD --with-pic --prefix=$LOCAL_INSTALL
-else
-  wrap ./configure --with-gflags=$GFLAGS_BUILD --with-pic --prefix=$LOCAL_INSTALL
-fi
+  wrap ./configure --with-pic --prefix=$LOCAL_INSTALL
   wrap make -j${BUILD_THREADS:-4} install
-
   footer $PACKAGE $PACKAGE_VERSION
 fi

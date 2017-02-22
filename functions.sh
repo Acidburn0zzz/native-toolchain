@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# cleans and rebuilds thirdparty/. The Impala build environment must be set up
-# by bin/impala-config.sh before running this script.
-
 # Exit on non-true return value
 set -e
 # Exit on reference to uninitialized variable
@@ -68,17 +65,27 @@ function download_url() {
   fi
 }
 
+# Usage: clean_dir <directory path>
+# Cleans the specified directory of non-versioned files.
+function clean_dir() {
+  local DIR=$1
+  echo "Cleaning $DIR ..."
+  # git clean fails on some versions when provided absolute path of current directory.
+  pushd "$DIR"
+  git clean -fdx .
+  popd
+}
+
 # Checks if the existing build artifacts need to be removed and verifies
 # that all required directories exist.
 function prepare_build_dir() {
   if [ $CLEAN -eq 1 ]; then
-    echo "Cleaning.."
-    git clean -fdx $SOURCE_DIR
+    clean_dir "$SOURCE_DIR"
   fi
 
   # Destination directory for build
-  mkdir -p $SOURCE_DIR/build
   export BUILD_DIR=$SOURCE_DIR/build
+  mkdir -p "$BUILD_DIR"
 
   # Create a check directory containing a sentry file for each package
   mkdir -p $SOURCE_DIR/check
@@ -244,6 +251,12 @@ function footer() {
   fi
 
   touch $SOURCE_DIR/check/${PKG_NAME}-${PKG_VERSION}${PATCH_VERSION}
+
+  if [ $CLEAN_TMP_AFTER_BUILD -eq 1 ]; then
+    # The current directory may be a build directory that we're about to remove.
+    cd $SOURCE_DIR
+    clean_dir "$SOURCE_DIR/source/${PKG_NAME}"
+  fi
   echo "# Build Complete ${PKG_NAME}-${PKG_VERSION}${PATCH_VERSION}"
   echo "#######################################################################"
 }
@@ -426,4 +439,12 @@ function generate_build_id() {
   # Get Jenkins build number or a unique id if we're not in jenkins.
   local UNIQUE_ID=${BUILD_NUMBER:-$(cat /proc/sys/kernel/random/uuid)}
   echo "${UNIQUE_ID}-${GIT_HASH}"
+}
+
+function enable_toolchain_autotools() {
+    PATH=${BUILD_DIR}/autoconf-${AUTOCONF_VERSION}/bin/:$PATH
+    PATH=${BUILD_DIR}/automake-${AUTOMAKE_VERSION}/bin/:$PATH
+    PATH=${BUILD_DIR}/libtool-${LIBTOOL_VERSION}/bin/:$PATH
+    ACLOCAL_PATH=${BUILD_DIR}/libtool-${LIBTOOL_VERSION}/share/aclocal:${ACLOCAL_PATH:-}
+    export ACLOCAL_PATH
 }

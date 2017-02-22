@@ -15,24 +15,13 @@
 
 # In addition to the usual build env vars, BOOST_VERSION must be set.
 #
-# KUDU_VERSION can be a tag, branch, or hash. If a hash is used, it should be the full
-# hash. A partial hash will lead to an error. After downloading a .zip of the source,
-# the extracted dir name won't match what the other scripts/functions expect.
+# PACKAGE_VERSION can be a tag, branch, or hash.
 
 if [[ "$DEBUG" == 1 ]]; then
   set -x
 fi
 
 set -euo pipefail
-
-set +u
-if [[ -z "$KUDU_VERSION" ]]; then
-  echo KUDU_VERSION must be set before calling this script. The value should \
-      correspond to a git hash or tag available at \
-      https://github.com/apache/kudu.
-  exit 1
-fi
-set -u
 
 THIS_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -47,11 +36,9 @@ function is_supported_platform {
   case "$OS_NAME" in
     # RHEL 5 can't build the Kudu toolchain llvm and likely more (very early failure).
     # Debian 6 and Sles 11 can't build the Kudu toolchain libpmem.
-    # Sles 12 may fail to build the Kudu toolchain cmake (Impala's toolchain had the same
-    # issue previously, IMPALA-3191).
     rhel) [[ "$OS_VERSION" -ge 6 ]];;
     debian) [[ "$OS_VERSION" -ge 7 ]];;
-    suse) false;;
+    suse) [[ "$OS_VERSION" -ge 12 ]];;
 
     # For any other OS just assume it'll work.
     *) true;;
@@ -84,27 +71,30 @@ function build {
      echo "Building Kudu"  #TODO: uses header here
      cd kudu
   else
-     download_url https://github.com/apache/kudu/archive/$KUDU_VERSION.tar.gz \
-        kudu-$KUDU_VERSION.tar.gz
-     # If the version is a git hash, the name of the root dir in the archive includes the
-     # full hash even if an abbreviated hash was given through the download URL. The
-     # difference would lead to a mismatch in expected vs actual dir name after extraction.
-     # So the extracted root dir name will be found by inspection.
-     EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$KUDU_VERSION.tar.gz)
-     if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
-       echo Failed to find the name of the root folder in the Kudu tarball. The search \
-           command output was: "'$EXTRACTED_DIR_NAME'".
-       exit 1
-     fi
-     header $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
+  # Allow overriding of the github URL from the environment - e.g. if we want to build
+  # a hash from a forked repo.
+  KUDU_GITHUB_URL=${KUDU_GITHUB_URL:-https://github.com/apache/kudu}
+  download_url ${KUDU_GITHUB_URL}/archive/$PACKAGE_VERSION.tar.gz kudu-$PACKAGE_VERSION.tar.gz
   fi
- 
+  
   if ! needs_build_package; then
     return
   fi
 
- 
-  
+  # If the version is a git hash, the name of the root dir in the archive includes the
+  # full hash even if an abbreviated hash was given through the download URL. The
+  # difference would lead to a mismatch in expected vs actual dir name after extraction.
+  # So the extracted root dir name will be found by inspection.
+  EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$PACKAGE_VERSION.tar.gz)
+  # Removing trailing slash
+  EXTRACTED_DIR_NAME=${EXTRACTED_DIR_NAME%/}
+  if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
+    echo Failed to find the name of the root folder in the Kudu tarball. The search \
+        command output was: "'$EXTRACTED_DIR_NAME'".
+    exit 1
+  fi
+  header $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
+
   # Kudu's dependencies are not in the toolchain. They could be added later.
   
   cd thirdparty
@@ -167,6 +157,7 @@ function build {
   popd
 
   cd $THIS_DIR
+  rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
 
   echo "Kudu build completed" 
 }
