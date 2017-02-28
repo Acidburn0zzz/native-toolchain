@@ -78,12 +78,12 @@ function build {
   if ! needs_build_package; then
     return
   fi
- 
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
-     cd kudu
-     git checkout kudu-ppc
-     echo "Building Kudu"
-  else
+  
+   if [[ "$(uname -p)" == "ppc64le" ]]; then
+    cd kudu
+    git checkout kudu-ppc
+    echo "Building Kudu"
+   else
      # If the version is a git hash, the name of the root dir in the archive includes the
      # full hash even if an abbreviated hash was given through the download URL. The
      # difference would lead to a mismatch in expected vs actual dir name after extraction.
@@ -117,7 +117,6 @@ function build {
   ####################building source code on ppc#######################
   source $SOURCE_DIR/source/kudu/kudu-config.sh
   if [[ $(uname -p) == 'ppc'* ]]; then
-    echo "Installing gcc-4.9.3 to build kudu src code on ppc"	
     source $SOURCE_DIR/source/kudu/kudu-config.sh
     export CC=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/gcc
     export CXX=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/g++
@@ -160,6 +159,10 @@ function build {
   popd
 
   cd $THIS_DIR
+  if [[ "$(uname -p)" != "ppc"* ]]; then
+     rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
+  fi
+
   echo "Kudu build completed" 
 }
 
