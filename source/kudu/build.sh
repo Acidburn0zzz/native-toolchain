@@ -118,7 +118,10 @@ function build {
   ####################building source code on ppc#######################
   source $SOURCE_DIR/source/kudu/kudu-config.sh
   if [[ $(uname -p) == 'ppc'* ]]; then
+    echo "Installing gcc-4.9.3 to build kudu src code on ppc"
+    source $SOURCE_DIR/source/kudu/setup_gcc493.sh
     source $SOURCE_DIR/source/kudu/kudu-config.sh
+    cd $KUDU_DIR/kudu
     export CC=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/gcc
     export CXX=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/g++
   else
