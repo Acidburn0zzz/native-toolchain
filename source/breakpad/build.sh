@@ -31,6 +31,9 @@ if needs_build_package ; then
   header $PACKAGE $PACKAGE_VERSION
 
   wrap ./configure --prefix=$LOCAL_INSTALL
+  if [[ "$(uname -p)" == "ppc"* ]]; then
+     wrap patch -s -p1 < $SOURCE_DIR/source/breakpad/breakpad-20150612.patch
+  fi
   wrap make -j${BUILD_THREADS:-4}
   wrap make install
   footer $PACKAGE $PACKAGE_VERSION
