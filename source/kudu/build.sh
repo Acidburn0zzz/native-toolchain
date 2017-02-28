@@ -69,32 +69,36 @@ function build {
   if [[ "$(uname -p)" == "ppc"* ]]; then
      git clone https://github.com/ibmsoe/kudu 
      echo "Building Kudu"  #TODO: uses header here
-     cd kudu
   else
-  # Allow overriding of the github URL from the environment - e.g. if we want to build
-  # a hash from a forked repo.
-  KUDU_GITHUB_URL=${KUDU_GITHUB_URL:-https://github.com/apache/kudu}
-  download_url ${KUDU_GITHUB_URL}/archive/$PACKAGE_VERSION.tar.gz kudu-$PACKAGE_VERSION.tar.gz
+     # Allow overriding of the github URL from the environment - e.g. if we want to build
+     # a hash from a forked repo.
+     KUDU_GITHUB_URL=${KUDU_GITHUB_URL:-https://github.com/apache/kudu}
+     download_url ${KUDU_GITHUB_URL}/archive/$PACKAGE_VERSION.tar.gz kudu-$PACKAGE_VERSION.tar.gz
   fi
   
   if ! needs_build_package; then
     return
   fi
 
-  # If the version is a git hash, the name of the root dir in the archive includes the
-  # full hash even if an abbreviated hash was given through the download URL. The
-  # difference would lead to a mismatch in expected vs actual dir name after extraction.
-  # So the extracted root dir name will be found by inspection.
-  EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$PACKAGE_VERSION.tar.gz)
-  # Removing trailing slash
-  EXTRACTED_DIR_NAME=${EXTRACTED_DIR_NAME%/}
-  if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
-    echo Failed to find the name of the root folder in the Kudu tarball. The search \
-        command output was: "'$EXTRACTED_DIR_NAME'".
-    exit 1
+  if [[ "$(uname -p)" == "ppc"* ]]; then
+     cd kudu
+     git checkout kudu-ppc
+     echo "Building Kudu"
+  else
+     # If the version is a git hash, the name of the root dir in the archive includes the
+     # full hash even if an abbreviated hash was given through the download URL. The
+     # difference would lead to a mismatch in expected vs actual dir name after extraction.
+     # So the extracted root dir name will be found by inspection.
+     EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$PACKAGE_VERSION.tar.gz)
+     # Removing trailing slash
+     EXTRACTED_DIR_NAME=${EXTRACTED_DIR_NAME%/}
+     if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
+       echo Failed to find the name of the root folder in the Kudu tarball. The search \
+           command output was: "'$EXTRACTED_DIR_NAME'".
+       exit 1
+     fi
+     header $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
   fi
-  header $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
-
   # Kudu's dependencies are not in the toolchain. They could be added later.
   
   cd thirdparty
@@ -114,7 +118,6 @@ function build {
   ####################building source code on ppc#######################
   source $SOURCE_DIR/source/kudu/kudu-config.sh
   if [[ $(uname -p) == 'ppc'* ]]; then
-    echo "Installing gcc-4.9.3 to build kudu src code on ppc"	
     source $SOURCE_DIR/source/kudu/kudu-config.sh
     export CC=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/gcc
     export CXX=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/g++
@@ -157,7 +160,9 @@ function build {
   popd
 
   cd $THIS_DIR
-  rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
+  if [[ "$(uname -p)" != "ppc"* ]]; then
+     rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
+  fi
 
   echo "Kudu build completed" 
 }
