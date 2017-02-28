@@ -252,7 +252,7 @@ BREAKPAD_VERSION=20150612-p1 $SOURCE_DIR/source/breakpad/build.sh
 ################################################################################
 # Build Kudu
 ################################################################################
-export BOOST_VERSION=1.57.0
+export BOOST_VERSION=1.57.0-p1
 if [[ "$(uname -p)" == "ppc"* ]]; then
    export KUDU_VERSION="master"
    if $SOURCE_DIR/source/kudu/build.sh is_supported_platform; then
