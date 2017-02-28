@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2015 Cloudera Inc.
+# Copyright 2017 Cloudera Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,15 +24,12 @@ source $SOURCE_DIR/functions.sh
 THIS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 prepare $THIS_DIR
 
+# Download the dependency from S3
 download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
 
 if needs_build_package ; then
   header $PACKAGE $PACKAGE_VERSION
-  if [ "${LZ4_VERSION}" != "svn" ]; then
-      CFLAGS=-fPIC
-      cd contrib/cmake_unofficial
-  fi
-  wrap cmake -DBUILD_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX=$LOCAL_INSTALL -DCMAKE_BUILD_TYPE=RELEASE .
+  wrap cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${LOCAL_INSTALL}
   wrap make -j${BUILD_THREADS:-4} install
   footer $PACKAGE $PACKAGE_VERSION
 fi
