@@ -26,7 +26,7 @@ prepare $THIS_DIR
 
 if needs_build_package ; then
   download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
-  header $PACKAGE $PACKAGE_VERSION
+  setup_package_build $PACKAGE $PACKAGE_VERSION
 
 if [[ "$(uname -p)" == "ppc"* ]]; then
   wrap ./configure \
@@ -37,5 +37,5 @@ else
 fi
   wrap make -j${BUILD_THREADS:-4} install
 
-  footer $PACKAGE $PACKAGE_VERSION
+  finalize_package_build $PACKAGE $PACKAGE_VERSION
 fi

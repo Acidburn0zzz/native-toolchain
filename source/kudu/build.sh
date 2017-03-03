@@ -98,7 +98,7 @@ function build {
      fi
      setup_package_build $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
   fi
- 
+  
   # Kudu's dependencies are not in the toolchain. They could be added later.
   cd thirdparty
 
@@ -166,7 +166,11 @@ function build {
      rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
   fi
 
+<<<<<<< 53190906b87d420e45a7580c3f8dac28271e01e1
   echo "Kudu build completed" 
+=======
+  finalize_package_build $PACKAGE $PACKAGE_VERSION
+>>>>>>> Fix setup / download order in build scripts
 }
 
 # This should be called from the Kudu build dir.
