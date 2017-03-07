@@ -66,7 +66,7 @@ function build {
 
   cd $THIS_DIR
  
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
      git clone https://github.com/ibmsoe/kudu 
      echo "Building Kudu"  #TODO: uses header here
   else
@@ -80,7 +80,7 @@ function build {
     return
   fi
 
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
      cd kudu
      git checkout kudu-ppc
      echo "Building Kudu"
@@ -117,7 +117,7 @@ function build {
   
   ####################building source code on ppc#######################
   source $SOURCE_DIR/source/kudu/kudu-config.sh
-  if [[ $(uname -p) == 'ppc'* ]]; then
+  if [[ $(uname -p) == 'ppc64le' ]]; then
     echo "Installing gcc-4.9.3 to build kudu src code on ppc"
     source $SOURCE_DIR/source/kudu/setup_gcc493.sh
     source $SOURCE_DIR/source/kudu/kudu-config.sh
@@ -133,7 +133,7 @@ function build {
       src/kudu/codegen/CMakeLists.txt
   fi
   # Now Kudu can be built.
-  if [[ $(uname -p) == 'ppc'* ]]; then
+  if [[ $(uname -p) == 'ppc64le' ]]; then
     LOCAL_INSTALL=$SOURCE_DIR/build/kudu
     BUILD_LOG=$SOURCE_DIR/check/kudu.log
   fi
@@ -163,7 +163,7 @@ function build {
   popd
 
   cd $THIS_DIR
-  if [[ "$(uname -p)" != "ppc"* ]]; then
+  if [[ "$(uname -p)" != "ppc64le" ]]; then
      rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
   fi
 

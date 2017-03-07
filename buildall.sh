@@ -258,7 +258,7 @@ FLATBUFFERS_VERSION=1.6.0 $SOURCE_DIR/source/flatbuffers/build.sh
 # Build Kudu
 ################################################################################
 export BOOST_VERSION=1.57.0-p1
-if [[ "$(uname -p)" == "ppc"* ]]; then
+if [[ "$(uname -p)" == "ppc64le" ]]; then
    export KUDU_VERSION="master"
    if $SOURCE_DIR/source/kudu/build.sh is_supported_platform; then
       $SOURCE_DIR/source/kudu/build.sh build

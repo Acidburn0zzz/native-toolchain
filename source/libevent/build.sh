@@ -31,7 +31,7 @@ if needs_build_package ; then
   header $PACKAGE $PACKAGE_VERSION
 
   wrap ./autogen.sh
-if [[ "$(uname -p)" == "ppc"* ]]; then
+if [[ "$(uname -p)" == "ppc64le" ]]; then
   wrap ./configure --build=powerpc64le-unknown-linux-gnu --prefix=$LOCAL_INSTALL
 else
   wrap ./configure --prefix=$LOCAL_INSTALL

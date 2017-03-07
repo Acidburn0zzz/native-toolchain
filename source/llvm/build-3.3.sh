@@ -80,7 +80,7 @@ function build_llvm_33() {
     exit 1
   fi
 
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
     wrap ../llvm-$PACKAGE_VERSION.src$PATCH_VERSION/configure \
         --enable-targets=powerpc,cpp --enable-terminfo=no \
         --prefix=$LOCAL_INSTALL --with-pic $EXTRA_CONFIG_ARG \

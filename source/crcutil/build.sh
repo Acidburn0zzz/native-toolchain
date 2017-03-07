@@ -34,7 +34,7 @@ if needs_build_package ; then
 
   wrap ./autogen.sh
 
-if [[ "$(uname -p)" == "ppc"* ]]; then
+if [[ "$(uname -p)" == "ppc64le" ]]; then
   wrap patch -p4 < $SOURCE_DIR/source/crcutil/ppc-patches/crc_makefile_am.patch
   cd ./examples
   wrap patch -p5 < $SOURCE_DIR/source/crcutil/ppc-patches/crc_interface_cc.patch
