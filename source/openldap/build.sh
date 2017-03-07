@@ -30,7 +30,7 @@ if needs_build_package ; then
 
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
-if [[ "$(uname -p)" == "ppc"* ]]; then
+if [[ "$(uname -p)" == "ppc64le" ]]; then
   wrap ./configure --build=powerpc64le-unknown-linux-gnu --enable-slapd=no --enable-static --with-pic --prefix=$LOCAL_INSTALL
 else
   wrap ./configure --enable-slapd=no --enable-static --with-pic --prefix=$LOCAL_INSTALL

@@ -51,7 +51,7 @@ if needs_build_package ; then
     wrap glibtoolize --copy
     wrap autoconf
   fi
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
    JAVA_PREFIX=${LOCAL_INSTALL}/java PY_PREFIX=${LOCAL_INSTALL}/python \
    wrap ./configure --with-pic --prefix=${LOCAL_INSTALL} \
     --build=powerpc64le-unknown-linux-gnu \

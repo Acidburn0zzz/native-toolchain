@@ -30,7 +30,7 @@ if needs_build_package ; then
 
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
-if [[ "$(uname -p)" == "ppc"* ]]; then
+if [[ "$(uname -p)" == "ppc64le" ]]; then
   echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $THIS_DIR/$PACKAGE-$PACKAGE_VERSION/tests/Makefile.am
   autoreconf -i
   wrap ./configure --build=powerpc64le-unknown-linux-gnu -disable-minidebuginfo --with-pic --prefix=$LOCAL_INSTALL

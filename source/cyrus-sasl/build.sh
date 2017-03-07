@@ -47,7 +47,7 @@ if needs_build_package ; then
   # Disable everything except those protocols needed -- currently just Kerberos.
   # Sasl does not have a --with-pic configuration.
   
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
     CFLAGS="$CFLAGS -fPIC -DPIC" CXXFLAGS="$CXXFLAGS -fPIC -DPIC" wrap ./configure \
       --build=powerpc64le-unknown-linux-gnu \
       --disable-sql --disable-otp --disable-ldap --disable-digest --with-saslauthd=no \

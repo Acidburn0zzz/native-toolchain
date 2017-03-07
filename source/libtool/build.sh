@@ -30,7 +30,7 @@ if needs_build_package ; then
 
   enable_toolchain_autotools
 
-if [[ "$(uname -p)" == "ppc"* ]]; then
+if [[ "$(uname -p)" == "ppc64le" ]]; then
   wrap ./configure \
     --build=powerpc64le-unknown-linux-gnu \
     --with-pic --prefix=$LOCAL_INSTALL

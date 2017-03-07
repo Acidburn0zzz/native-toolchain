@@ -77,7 +77,7 @@ function build_llvm() {
   fi
 
   # Invoke CMake with the correct configuration
-  if [[ "$(uname -p)" == "ppc"* ]]; then
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
     wrap cmake ${THIS_DIR}/$PACKAGE_STRING.src${PATCH_VERSION} \
       -DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE} \
       -DCMAKE_INSTALL_PREFIX=$LOCAL_INSTALL \

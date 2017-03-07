@@ -32,7 +32,7 @@ if needs_build_package ; then
 
   GFLAGS_BUILD=$BUILD_DIR/gflags-$GFLAGS_VERSION
 
-if [[ "$(uname -p)" == "ppc"* ]]; then
+if [[ "$(uname -p)" == "ppc64le" ]]; then
   wrap ./configure \
     --build=powerpc64le-unknown-linux-gnu \
     --with-gflags=$GFLAGS_BUILD --with-pic --prefix=$LOCAL_INSTALL
