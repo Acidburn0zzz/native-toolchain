@@ -24,11 +24,11 @@ source $SOURCE_DIR/functions.sh
 THIS_DIR="$( cd "$( dirname "$0" )" && pwd )"
 prepare $THIS_DIR
 
-# Download the dependency from S3
-download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
-
 if needs_build_package ; then
-  header $PACKAGE $PACKAGE_VERSION
+  # Download the dependency from S3
+  download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
+
+  setup_package_build $PACKAGE $PACKAGE_VERSION
 
   wrap ./configure --prefix=$LOCAL_INSTALL
   if [[ "$(uname -p)" == "ppc64le" ]]; then
@@ -36,5 +36,5 @@ if needs_build_package ; then
   fi
   wrap make -j${BUILD_THREADS:-4}
   wrap make install
-  footer $PACKAGE $PACKAGE_VERSION
+  finalize_package_build $PACKAGE $PACKAGE_VERSION
 fi

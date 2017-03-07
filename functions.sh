@@ -138,9 +138,10 @@ function prepare() {
 # archive unpacks to the first directory and move it to <target dir>.
 # If PATCH_DIR is set, look in that directory for patches. Otherwise look in
 # "<package name>-<package version>-patches"
-# Usage: header <package name> <package version> [<archive file>
-#               [<extracted archive dir> [<target dir> [<extract command>]]]]
-function header() {
+# Usage: setup_package_build <package name> <package version> [<archive file>
+#                            [<extracted archive dir> [<target dir>
+#                            [<extract command>]]]]
+function setup_package_build() {
   local PKG_NAME=$1
   local PKG_VERSION=$2
   local ARCHIVE=${3-}
@@ -234,8 +235,11 @@ function header() {
   fi
 }
 
-# Usage: footer <package name> <package version>
-function footer() {
+# Build helper function that packages the build result, creates symbolic links
+# to the package's binaries, creates a check-point file to signal a successful
+# build, and optionally cleans up the build directory to free space.
+# Usage: finalize_package_build <package name> <package version>
+function finalize_package_build() {
   local PKG_NAME=$1
   local PKG_VERSION=$2
 
@@ -246,7 +250,8 @@ function footer() {
   if [[ -d $BUILD_DIR/${PKG_NAME}-${PKG_VERSION}${PATCH_VERSION}/bin ]]; then
     mkdir -p $BUILD_DIR/bin
     for p in `ls $BUILD_DIR/${PKG_NAME}-${PKG_VERSION}${PATCH_VERSION}/bin`; do
-      ln -f -s $BUILD_DIR/${PKG_NAME}-${PKG_VERSION}${PATCH_VERSION}/bin/$p $BUILD_DIR/bin/$p
+      ln -f -s $BUILD_DIR/${PKG_NAME}-${PKG_VERSION}${PATCH_VERSION}/bin/$p \
+          $BUILD_DIR/bin/$p
     done
   fi
 
@@ -346,12 +351,14 @@ function build_dist_package() {
   FULL_TAR_NAME="${PACKAGE_STRING}${PATCH_VERSION}-${COMPILER}"
   FULL_TAR_NAME+="-${COMPILER_VERSION}"
 
+  # Add the toolchain git hash to the tarball so the compiled package can be traced
+  # back to the set of build scripts/flags used to compile it.
+  git rev-parse HEAD > \
+    ${BUILD_DIR}/${PACKAGE_STRING}${PATCH_VERSION}/toolchain-build-hash.txt
+
   tar zcf ${BUILD_DIR}/${FULL_TAR_NAME}.tar.gz\
     --directory=${BUILD_DIR} \
     ${PACKAGE_STRING}${PATCH_VERSION}
-
-  # Set generic
-  : ${label-"generic"}
 
   # If desired break on failure to publish the artifact
   RET_VAL=true
@@ -366,12 +373,12 @@ function build_dist_package() {
       -Dversion="${PACKAGE_VERSION}${PATCH_VERSION}-${COMPILER}-${COMPILER_VERSION}-${TOOLCHAIN_BUILD_ID}"\
       -Dfile="${BUILD_DIR}/${FULL_TAR_NAME}.tar.gz"\
       -Durl="http://maven.jenkins.cloudera.com:8081/artifactory/cdh-staging-local/"\
-      -DrepositoryId=cdh.releases.repo -Dpackaging=tar.gz -Dclassifier=${label} || $RET_VAL
+      -DrepositoryId=cdh.releases.repo -Dpackaging=tar.gz -Dclassifier=${BUILD_LABEL} || $RET_VAL
 
     # Publish to S3 as well
     if [[ -n "${AWS_ACCESS_KEY_ID}" && -n "${AWS_SECRET_ACCESS_KEY}" && -n "${S3_BUCKET}" ]]; then
       aws s3 cp "${BUILD_DIR}/${FULL_TAR_NAME}.tar.gz" \
-        s3://${S3_BUCKET}/build/${TOOLCHAIN_BUILD_ID}/${PACKAGE}/${PACKAGE_VERSION}${PATCH_VERSION}-${COMPILER}-${COMPILER_VERSION}/${FULL_TAR_NAME}-${label}.tar.gz \
+        s3://${S3_BUCKET}/build/${TOOLCHAIN_BUILD_ID}/${PACKAGE}/${PACKAGE_VERSION}${PATCH_VERSION}-${COMPILER}-${COMPILER_VERSION}/${FULL_TAR_NAME}-${BUILD_LABEL}.tar.gz \
         --region=us-west-1 || $RET_VAL
     fi
 

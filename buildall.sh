@@ -19,10 +19,10 @@ set -e
 set -u
 set -o pipefail
 
-# The init.sh script contains all the necessary logic to setup the environment
-# for the build process. This includes setting the right compiler and linker
-# flags.
+# Set up the environment configuration.
 source ./init.sh
+# Configure the compiler/linker flags, bootstrapping tools if necessary.
+source ./init-compiler.sh
 
 ################################################################################
 # How to add new versions to the toolchain:
@@ -247,7 +247,10 @@ LIBUNWIND_VERSION=1.1 $SOURCE_DIR/source/libunwind/build.sh
 ################################################################################
 # Build Breakpad
 ################################################################################
-BREAKPAD_VERSION=20150612-p1 $SOURCE_DIR/source/breakpad/build.sh
+if (( BUILD_HISTORICAL )); then
+  BREAKPAD_VERSION=20150612-p1 $SOURCE_DIR/source/breakpad/build.sh
+fi
+BREAKPAD_VERSION=88e5b2c8806bac3f2c80d2fe80094be5bd371601 $SOURCE_DIR/source/breakpad/build.sh
 
 ################################################################################
 # Build Flatbuffers

@@ -99,10 +99,11 @@ function build {
      fi
      header $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
   fi
-  # Kudu's dependencies are not in the toolchain. They could be added later.
-  
-  cd thirdparty
+  setup_package_build $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz \
+      $EXTRACTED_DIR_NAME
 
+  # Kudu's dependencies are not in the toolchain. They could be added later.
+  cd thirdparty
   # For some reason python 2.7 from Kudu's thirdparty doesn't build on CentOS 6. It's
   # not really needed since the toolchain provides python 2.7. To skip the thirdparty
   # build, "python2.7" needs to be in the PATH.
@@ -168,6 +169,7 @@ function build {
   fi
 
   echo "Kudu build completed" 
+  finalize_package_build $PACKAGE $PACKAGE_VERSION
 }
 
 # This should be called from the Kudu build dir.
