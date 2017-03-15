@@ -5,7 +5,7 @@ download_gcc493() {
  	source $SOURCE_DIR/source/kudu/kudu-config.sh
         cd $KUDU_TP_DIR/src
         echo "Downloading gcc-${KUDU_GCC_VERSION} in `pwd`" 
- 	wget ftp://gd.tuwien.ac.at/gnu/gcc/releases/gcc-${KUDU_GCC_VERSION}/gcc-${KUDU_GCC_VERSION}.tar.bz2
+ 	wget http://gd.tuwien.ac.at/gnu/gcc/releases/gcc-${KUDU_GCC_VERSION}/gcc-${KUDU_GCC_VERSION}.tar.bz2
 	tar -xvf gcc-${KUDU_GCC_VERSION}.tar.bz2
        	cd gcc-${KUDU_GCC_VERSION}
         ./contrib/download_prerequisites 
