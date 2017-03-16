@@ -32,7 +32,7 @@ if needs_build_package ; then
 
   wrap ./configure --prefix=$LOCAL_INSTALL
   if [[ "$(uname -p)" == "ppc64le" ]]; then
-     wrap patch -s -p1 < $SOURCE_DIR/source/breakpad/breakpad-20150612.patch
+     wrap patch  -p1 < $SOURCE_DIR/source/breakpad/breakpad-88e5b2c_ppc.patch
   fi
   wrap make -j${BUILD_THREADS:-4}
   wrap make install
