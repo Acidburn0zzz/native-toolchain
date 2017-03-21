@@ -39,7 +39,7 @@ if [[ "$(uname -p)" == "ppc64le" ]]; then
 else
   wrap ./configure --with-gflags=$GFLAGS_BUILD --with-pic --prefix=$LOCAL_INSTALL
 fi
-  wrap make -j${BUILD_THREADS:-4} install
+  CFLAGS="-fPIC -DPIC" wrap make -j${BUILD_THREADS:-4} install
 
   finalize_package_build $PACKAGE $PACKAGE_VERSION
 fi

@@ -30,12 +30,15 @@ if needs_build_package ; then
 
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
-if [[ "$(uname -p)" == "ppc64le" ]]; then
-  wrap ./configure --build=powerpc64le-unknown-linux-gnu --with-pic --prefix=$LOCAL_INSTALL
-else
-  wrap ./configure --with-pic --prefix=$LOCAL_INSTALL
-fi
-  wrap make -j${BUILD_THREADS:-4} install
-
+  # Recent glog releases (2.2.0+) use CMake rather than autotools. Prefer that if
+  # available.
+  if [ -e CMakeLists.txt ]; then
+    wrap cmake -DBUILD_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX=$LOCAL_INSTALL -DCMAKE_BUILD_TYPE=RELEASE
+  else
+    wrap ./configure --with-pic --prefix=$LOCAL_INSTALL
+  fi
+  # Force PIC compilation (will happen automatically with autotools-based build, but not
+  # cmake)
+  CFLAGS="-fPIC -DPIC" wrap make -j${BUILD_THREADS:-4} install
   finalize_package_build $PACKAGE $PACKAGE_VERSION
 fi
