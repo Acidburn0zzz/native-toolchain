@@ -167,6 +167,7 @@ function build {
      rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
   fi
 
+  echo "Kudu build completed" 
   finalize_package_build $PACKAGE $PACKAGE_VERSION
 }
 
