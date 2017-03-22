@@ -135,35 +135,6 @@ echo "Build ID is $TOOLCHAIN_BUILD_ID"
 # Make sure the necessary file system layout exists
 prepare_build_dir
 
-if [[ $SYSTEM_GCC -eq 0 ]]; then
-  COMPILER="gcc"
-  COMPILER_VERSION=$GCC_VERSION
-else
-  COMPILER="gcc"
-  COMPILER_VERSION="system"
-fi
-
-export COMPILER
-export COMPILER_VERSION
-
-################################################################################
-# Prepare compiler and linker commands. This will set the typical environment
-# variables. In this case these are:
-#
-#  - CFLAGS
-#  - CXXFLAGS
-#  - LDFLAGS
-#
-################################################################################
-
-# ARCH_FLAGS are used to convey architectur dependent flags that should
-# be obbeyed by libraries explicitly needing this information.
-if [[ "$(uname -p)" == "ppc64le" ]]; then
-   ARCH_FLAGS="-mvsx -maltivec"
-else
-   ARCH_FLAGS="-mno-avx2"
-fi
-
 # Check Platform and build the correct release name. The RELEASE_NAME is used
 # when publishing the artifacts to the artifactory.
 if [[ "$OSTYPE" =~ ^linux ]]; then
