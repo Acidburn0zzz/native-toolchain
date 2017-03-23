@@ -46,10 +46,19 @@ if needs_build_package ; then
 
   # Disable everything except those protocols needed -- currently just Kerberos.
   # Sasl does not have a --with-pic configuration.
-  CFLAGS="$CFLAGS -fPIC -DPIC" CXXFLAGS="$CXXFLAGS -fPIC -DPIC" wrap ./configure \
-    --disable-sql --disable-otp --disable-ldap --disable-digest --with-saslauthd=no \
-    $CONFIGURE_FLAGS \
-    --prefix=$LOCAL_INSTALL --enable-static --enable-staticdlopen $WITH_FRAMEWORKS
+  
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
+    CFLAGS="$CFLAGS -fPIC -DPIC" CXXFLAGS="$CXXFLAGS -fPIC -DPIC" wrap ./configure \
+      --build=powerpc64le-unknown-linux-gnu \
+      --disable-sql --disable-otp --disable-ldap --disable-digest --with-saslauthd=no \
+      $CONFIGURE_FLAGS \
+      --prefix=$LOCAL_INSTALL --enable-static --enable-staticdlopen $WITH_FRAMEWORKS
+  else
+    CFLAGS="$CFLAGS -fPIC -DPIC" CXXFLAGS="$CXXFLAGS -fPIC -DPIC" wrap ./configure \
+      --disable-sql --disable-otp --disable-ldap --disable-digest --with-saslauthd=no \
+      $CONFIGURE_FLAGS \
+      --prefix=$LOCAL_INSTALL --enable-static --enable-staticdlopen $WITH_FRAMEWORKS
+  fi
   # the first time you do a make it fails, build again.
   wrap make || /bin/true
   wrap make -j${BUILD_THREADS:-4}
