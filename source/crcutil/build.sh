@@ -33,6 +33,7 @@ if needs_build_package ; then
   enable_toolchain_autotools
 
   wrap ./autogen.sh
+
   wrap ./configure --with-pic --prefix=$LOCAL_INSTALL
   wrap make -j${BUILD_THREADS:-4} install
 

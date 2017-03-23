@@ -102,8 +102,13 @@ LIBEV_VERSION=4.20 $SOURCE_DIR/source/libev/build.sh
 ################################################################################
 # Build crcutil
 ################################################################################
-CRCUTIL_VERSION=440ba7babeff77ffad992df3a10c767f184e946e\
-  $SOURCE_DIR/source/crcutil/build.sh
+if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+  CRCUTIL_VERSION=440ba7babeff77ffad992df3a10c767f184e946e-p2\
+   $SOURCE_DIR/source/crcutil/build.sh
+else
+  CRCUTIL_VERSION=440ba7babeff77ffad992df3a10c767f184e946e\
+   $SOURCE_DIR/source/crcutil/build.sh
+fi
 
 ################################################################################
 # Build OpenSSL - this is not intended for production use of Impala.
@@ -254,8 +259,11 @@ LIBUNWIND_VERSION=1.1 $SOURCE_DIR/source/libunwind/build.sh
 ################################################################################
 if (( BUILD_HISTORICAL )); then
   BREAKPAD_VERSION=20150612-p1 $SOURCE_DIR/source/breakpad/build.sh
+elif [[ "$ARCH_NAME" == "ppc64le" ]]; then
+  BREAKPAD_VERSION=88e5b2c8806bac3f2c80d2fe80094be5bd371601-p3 $SOURCE_DIR/source/breakpad/build.sh
+else
+  BREAKPAD_VERSION=88e5b2c8806bac3f2c80d2fe80094be5bd371601-p2 $SOURCE_DIR/source/breakpad/build.sh
 fi
-BREAKPAD_VERSION=88e5b2c8806bac3f2c80d2fe80094be5bd371601-p2 $SOURCE_DIR/source/breakpad/build.sh
 
 ################################################################################
 # Build Flatbuffers
@@ -274,7 +282,6 @@ FLATBUFFERS_VERSION=1.6.0 $SOURCE_DIR/source/flatbuffers/build.sh
     build_fake_package kudu
   fi
 )
-
 ################################################################################
 # Build TPC-H
 ################################################################################

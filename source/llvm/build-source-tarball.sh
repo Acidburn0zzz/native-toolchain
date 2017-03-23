@@ -66,7 +66,6 @@ function build_llvm() {
 
   mkdir -p ${THIS_DIR}/build-$PACKAGE_STRING
   pushd ${THIS_DIR}/build-$PACKAGE_STRING
-
   local EXTRA_CMAKE_ARGS=
   local LLVM_BUILD_TYPE=Release
   if [[ "$PACKAGE_VERSION" =~ "-asserts" ]]; then
@@ -76,11 +75,18 @@ function build_llvm() {
     LLVM_BUILD_TYPE=Debug
   fi
 
+  TARGET=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    TARGET+="PowerPC"
+  else
+    TARGET+="X86"
+  fi
+
   # Invoke CMake with the correct configuration
   wrap cmake ${THIS_DIR}/$PACKAGE_STRING.src${PATCH_VERSION} \
       -DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE} \
       -DCMAKE_INSTALL_PREFIX=$LOCAL_INSTALL \
-      -DLLVM_TARGETS_TO_BUILD=X86 \
+      -DLLVM_TARGETS_TO_BUILD=$TARGET \
       -DLLVM_ENABLE_RTTI=ON \
       -DLLVM_ENABLE_TERMINFO=OFF \
       -DLLVM_PARALLEL_COMPILE_JOBS=${BUILD_THREADS:-4} \

@@ -302,6 +302,9 @@ function apply_patches() {
   PATCH_NUM=1
   if [[ -d "$PATCH_DIR" ]]; then
     for p in `find -L "$PATCH_DIR" -type f | sort`; do
+      if [ `echo $p | grep -c "ppc.patch"` -gt 0 ] && [ "$ARCH_NAME" != "ppc64le" ]; then
+        continue;
+      fi
       echo "Applying patch ${PATCH_NUM}...${p}"
       set +e
       # Check if patch can be applied at -p2 first, then p1
@@ -333,7 +336,7 @@ function build_fake_package() {
   if needs_build_package; then
     DESTDIR="${BUILD_DIR}/${PACKAGE_STRING}${PATCH_VERSION}"
     mkdir -p ${DESTDIR}
-    echo "Package not built for $OSTYPE $RELEASE_NAME." >> ${DESTDIR}/README
+    echo "Package not built for $OSTYPE $RELEASE_NAME $ARCH_NAME." >> ${DESTDIR}/README
 
     # Package and upload the fake dir
     build_dist_package

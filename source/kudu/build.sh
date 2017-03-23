@@ -28,8 +28,11 @@ THIS_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Returns success if Kudu can be built on this platform.
 function is_supported_platform {
   set +u
-  if [[ -z "$OS_NAME" || -z "$OS_VERSION" ]]; then
-    echo OS_NAME and OS_VERSION must be set before calling this script.
+  if [[ -z "$OS_NAME" || -z "$OS_VERSION" || -z "$ARCH_NAME" ]]; then
+    echo OS_NAME, OS_VERSION and ARCH_NAME must be set before calling this script.
+    return 1
+  fi
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
     return 1
   fi
   set -u
@@ -66,7 +69,7 @@ function build {
 
   cd $THIS_DIR
   # Allow overriding of the github URL from the environment - e.g. if we want to build
-  # a hash from a forked repo.
+  # a hash from a forked repo
   KUDU_GITHUB_URL=${KUDU_GITHUB_URL:-https://github.com/apache/kudu}
   download_url ${KUDU_GITHUB_URL}/archive/$PACKAGE_VERSION.tar.gz kudu-$PACKAGE_VERSION.tar.gz
 
@@ -86,9 +89,8 @@ function build {
         command output was: "'$EXTRACTED_DIR_NAME'".
     exit 1
   fi
-  setup_package_build $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz \
-      $EXTRACTED_DIR_NAME
-
+  setup_package_build $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
+  
   # Kudu's dependencies are not in the toolchain. They could be added later.
   cd thirdparty
   # For some reason python 2.7 from Kudu's thirdparty doesn't build on CentOS 6. It's
@@ -102,15 +104,15 @@ function build {
   # Update the PATH to include Kudu's toolchain binaries (after our toolchain's Python).
   KUDU_TP_PATH="`pwd`/thirdparty/installed/common/bin"
   PATH="$BUILD_DIR/python-2.7.10/bin:$KUDU_TP_PATH:$OLD_PATH"
-
+  
   # The line below configures clang to find gcc from the toolchain. Without this the
   # build will still work on some systems but there will be strange crashes at runtime.
   # On other systems, such as default RHEL6, the build will fail because c++11 isn't
   # supported on the system gcc.
-  sed -i -r "s:^(set\(IR_FLAGS):\1\n  --gcc-toolchain=$(dirname $(which $CXX))/..:" \
+    sed -i -r "s:^(set\(IR_FLAGS):\1\n  --gcc-toolchain=$(dirname $(which $CXX))/..:" \
       src/kudu/codegen/CMakeLists.txt
-
   # Now Kudu can be built.
+    
   RELEASE_INSTALL_DIR="$LOCAL_INSTALL/release"
   mkdir -p release_build_dir
   pushd release_build_dir

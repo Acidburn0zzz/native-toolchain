@@ -43,6 +43,9 @@ if needs_build_package ; then
     CONFIGURE_FLAGS+=" --with-bdb-incdir=/usr/include/libdb4"
     CONFIGURE_FLAGS+=" --with-bdb-libdir=/usr/lib64/libdb4"
   fi
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAGS+="--build=powerpc64le-unknown-linux-gnu"
+  fi
 
   # Disable everything except those protocols needed -- currently just Kerberos.
   # Sasl does not have a --with-pic configuration.
