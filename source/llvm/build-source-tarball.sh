@@ -77,7 +77,19 @@ function build_llvm() {
   fi
 
   # Invoke CMake with the correct configuration
-  wrap cmake ${THIS_DIR}/$PACKAGE_STRING.src${PATCH_VERSION} \
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
+    wrap cmake ${THIS_DIR}/$PACKAGE_STRING.src${PATCH_VERSION} \
+      -DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE} \
+      -DCMAKE_INSTALL_PREFIX=$LOCAL_INSTALL \
+      -DLLVM_TARGETS_TO_BUILD=PowerPC \
+      -DLLVM_ENABLE_RTTI=ON \
+      -DLLVM_ENABLE_TERMINFO=OFF \
+      -DLLVM_PARALLEL_COMPILE_JOBS=${BUILD_THREADS:-4} \
+      -DLLVM_PARALLEL_LINK_JOBS=${BUILD_THREADS:-4} \
+      -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
+      ${EXTRA_CMAKE_ARGS}
+  else
+    wrap cmake ${THIS_DIR}/$PACKAGE_STRING.src${PATCH_VERSION} \
       -DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE} \
       -DCMAKE_INSTALL_PREFIX=$LOCAL_INSTALL \
       -DLLVM_TARGETS_TO_BUILD=X86 \
@@ -87,6 +99,7 @@ function build_llvm() {
       -DLLVM_PARALLEL_LINK_JOBS=${BUILD_THREADS:-4} \
       -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE \
       ${EXTRA_CMAKE_ARGS}
+  fi
 
   wrap make -j${BUILD_THREADS:-4} install
   popd

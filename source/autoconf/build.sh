@@ -28,7 +28,13 @@ if needs_build_package ; then
   download_dependency $PACKAGE "${PACKAGE_STRING}.tar.gz" $THIS_DIR
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
+if [[ "$(uname -p)" == "ppc64le" ]]; then
+  wrap ./configure \
+    --build=powerpc64le-unknown-linux-gnu \
+    --with-pic --prefix=$LOCAL_INSTALL
+else
   wrap ./configure --with-pic --prefix=$LOCAL_INSTALL
+fi
   wrap make -j${BUILD_THREADS:-4} install
 
   finalize_package_build $PACKAGE $PACKAGE_VERSION
