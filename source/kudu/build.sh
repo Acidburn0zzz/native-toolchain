@@ -108,7 +108,7 @@ function build {
   # build, "python2.7" needs to be in the PATH.
   OLD_PATH="$PATH"
   PATH="$BUILD_DIR/python-2.7.10/bin:$OLD_PATH"
-  ./build-if-necessary.sh
+  wrap ./build-if-necessary.sh
   cd ..
 
   # Update the PATH to include Kudu's toolchain binaries (after our toolchain's Python).
@@ -141,11 +141,11 @@ function build {
   RELEASE_INSTALL_DIR="$LOCAL_INSTALL/release"
   mkdir -p release_build_dir
   pushd release_build_dir
-  cmake \
+  wrap cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DNO_TESTS=1 \
       -DCMAKE_INSTALL_PREFIX="$RELEASE_INSTALL_DIR" ..
-  make -j$BUILD_THREADS
+  wrap make -j$BUILD_THREADS
   install_kudu "$RELEASE_INSTALL_DIR"
   popd
 
@@ -153,12 +153,12 @@ function build {
   DEBUG_INSTALL_DIR="$LOCAL_INSTALL/debug"
   mkdir -p debug_build_dir
   pushd debug_build_dir
-  cmake \
+  wrap cmake \
       -DCMAKE_BUILD_TYPE=Debug \
       -DKUDU_LINK=static \
       -DNO_TESTS=1 \
       -DCMAKE_INSTALL_PREFIX="$DEBUG_INSTALL_DIR" ..
-  make -j$BUILD_THREADS
+  wrap make -j$BUILD_THREADS
   install_kudu "$DEBUG_INSTALL_DIR"
   popd
 
@@ -176,7 +176,7 @@ function install_kudu {
   INSTALL_DIR=$1
 
   # This actually only installs the client.
-  make install
+  wrap make install
 
   # Install the binaries, but only the needed stuff. Ignore the test utilities. The list
   # of files below should match the files provided by a parcel.
