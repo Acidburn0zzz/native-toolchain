@@ -265,6 +265,11 @@ FLATBUFFERS_VERSION=1.6.0 $SOURCE_DIR/source/flatbuffers/build.sh
 ################################################################################
 # Build Kudu
 ################################################################################
+export BOOST_VERSION=1.57.0-p1
+if [[ "$(uname -p)" == "ppc64le" ]]; then
+   export KUDU_VERSION="master"
+   build_fake_package kudu #WIP: aligning ppc-ported version to the latest upstream
+else
 (
   export BOOST_VERSION=1.57.0-p1
   export KUDU_VERSION=238249c
@@ -274,7 +279,7 @@ FLATBUFFERS_VERSION=1.6.0 $SOURCE_DIR/source/flatbuffers/build.sh
     build_fake_package kudu
   fi
 )
-
+fi
 ################################################################################
 # Build TPC-H
 ################################################################################

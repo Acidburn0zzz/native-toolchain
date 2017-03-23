@@ -1,0 +1,9 @@
+--- /home/test/crcutil-440ba7babeff77ffad992df3a10c767f184e946e/Makefile.am	2016-11-24 12:16:21.758388960 +0530
++++ /home/test2/crcutil-440ba7babeff77ffad992df3a10c767f184e946e/Makefile.am	2016-10-20 13:39:56.003903708 +0530
+@@ -1,5 +1,5 @@
+ ACLOCAL_AMFLAGS=-I m4
+-AM_CXXFLAGS=-DCRCUTIL_USE_MM_CRC32=1 -Wall -msse2 -Icode -Iexamples -Itests -O3 -mcrc32
++AM_CXXFLAGS=-DCRCUTIL_USE_MM_CRC32=0 -Wall -Icode -Iexamples -Itests
+ AM_CFLAGS=$(AM_CXXFLAGS)
+ check_PROGRAMS=crcutil_ut
+ TESTS=crcutil_ut

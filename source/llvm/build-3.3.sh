@@ -81,11 +81,18 @@ function build_llvm_33() {
     exit 1
   fi
 
-  wrap ../llvm-$PACKAGE_VERSION.src$PATCH_VERSION/configure \
-      --enable-targets=x86_64,cpp --enable-terminfo=no \
-      --prefix=$LOCAL_INSTALL --with-pic $EXTRA_CONFIG_ARG \
-      --with-extra-ld-options="$LDFLAGS"
-
+  if [[ "$(uname -p)" == "ppc64le" ]]; then
+    wrap ../llvm-$PACKAGE_VERSION.src$PATCH_VERSION/configure \
+        --enable-targets=powerpc,cpp --enable-terminfo=no \
+        --prefix=$LOCAL_INSTALL --with-pic $EXTRA_CONFIG_ARG \
+        --with-extra-ld-options="$LDFLAGS" \
+        --build=powerpc64le-unknown-linux-gnu
+  else
+    wrap ../llvm-$PACKAGE_VERSION.src$PATCH_VERSION/configure \
+        --enable-targets=x86_64,cpp --enable-terminfo=no \
+        --prefix=$LOCAL_INSTALL --with-pic $EXTRA_CONFIG_ARG \
+        --with-extra-ld-options="$LDFLAGS"
+  fi
   wrap make -j${BUILD_THREADS:-4} REQUIRES_RTTI=1 install
 
   # Do not forget to install clang as well

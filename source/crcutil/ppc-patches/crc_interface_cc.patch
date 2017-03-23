@@ -1,0 +1,15 @@
+--- /home/test/crcutil-440ba7babeff77ffad992df3a10c767f184e946e/examples/interface.cc	2014-05-23 09:31:26.000000000 +0530
++++ /home/test22/crcutil-440ba7babeff77ffad992df3a10c767f184e946e/examples/interface.cc	2016-10-20 14:04:26.317074411 +0530
+@@ -308,9 +308,12 @@
+                        UINT64 roll_start_value_lo,
+                        size_t roll_window_bytes,
+                        const void **allocated_memory) {
++  #if CRCUTIL_USE_MM_CRC32
+   return Create(Crc32cSSE4::FixedGeneratingPolynomial(), 0, Crc32cSSE4::FixedDegree(),
+                 canonical, roll_start_value_lo, 0, roll_window_bytes, IsSSE42Available(),
+                 allocated_memory);
++  #endif
++  return 0;
+ }
+ 
+ }  // namespace crcutil_interface
