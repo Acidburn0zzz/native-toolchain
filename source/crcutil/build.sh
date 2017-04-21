@@ -33,14 +33,13 @@ if needs_build_package ; then
   enable_toolchain_autotools
 
   wrap ./autogen.sh
-
-if [[ "$(uname -p)" == "ppc64le" ]]; then
-  wrap patch -p4 < $SOURCE_DIR/source/crcutil/ppc-patches/crc_makefile_am.patch
-  cd ./examples
-  wrap patch -p5 < $SOURCE_DIR/source/crcutil/ppc-patches/crc_interface_cc.patch
-  cd -
-  wrap autoreconf -i;
-fi
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    patch -p1 < $SOURCE_DIR/source/crcutil/ppc-patches/crc_makefile_am.patch
+    cd ./examples
+    patch -p2 < $SOURCE_DIR/source/crcutil/ppc-patches/crc_interface_cc.patch
+    cd -
+    wrap autoreconf -i;
+  fi
   wrap ./configure --with-pic --prefix=$LOCAL_INSTALL
   wrap make -j${BUILD_THREADS:-4} install
 

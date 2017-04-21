@@ -51,10 +51,14 @@ if needs_build_package ; then
     wrap glibtoolize --copy
     wrap autoconf
   fi
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
-   JAVA_PREFIX=${LOCAL_INSTALL}/java PY_PREFIX=${LOCAL_INSTALL}/python \
-   wrap ./configure --with-pic --prefix=${LOCAL_INSTALL} \
-    --build=powerpc64le-unknown-linux-gnu \
+
+  CONFIGURE_FLAGS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAGS+="--build=powerpc64le-unknown-linux-gnu"
+  fi
+
+  JAVA_PREFIX=${LOCAL_INSTALL}/java PY_PREFIX=${LOCAL_INSTALL}/python \
+    wrap ./configure --with-pic --prefix=${LOCAL_INSTALL} \
     --with-c_glib=no \
     --with-php=no --with-java=no --with-perl=no --with-erlang=no --with-csharp=no \
     --with-ruby=no --with-haskell=no --with-erlang=no --with-d=no \
@@ -63,20 +67,7 @@ if needs_build_package ; then
     --with-libevent=${LIBEVENT_ROOT} \
     --with-nodejs=no \
     --with-lua=no \
-    --with-go=no --with-qt4=no --with-libevent=no ${PIC_LIB_OPTIONS:-} $OPENSSL_ARGS
-  else
-    JAVA_PREFIX=${LOCAL_INSTALL}/java PY_PREFIX=${LOCAL_INSTALL}/python \
-    wrap ./configure --with-pic --prefix=${LOCAL_INSTALL} \
-    --with-c_glib=no \
-    --with-php=no --with-java=no --with-perl=no --with-erlang=no --with-csharp=no \
-    -with-ruby=no --with-haskell=no --with-erlang=no --with-d=no \
-    --with-boost=${BOOST_ROOT} \
-    --with-zlib=${ZLIB_ROOT} \
-    --with-libevent=${LIBEVENT_ROOT} \
-    --with-nodejs=no \
-    --with-lua=no \
-    --with-go=no --with-qt4=no --with-libevent=no ${PIC_LIB_OPTIONS:-} $OPENSSL_ARGS
-  fi
+    --with-go=no --with-qt4=no --with-libevent=no ${PIC_LIB_OPTIONS:-} $OPENSSL_ARGS $CONFIGURE_FLAGS
   MAKEFLAGS="" wrap make   # Build fails with -j${BUILD_THREADS}
   wrap make install
   cd contrib/fb303

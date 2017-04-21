@@ -31,9 +31,6 @@ if needs_build_package ; then
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
   wrap ./configure --prefix=$LOCAL_INSTALL
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
-     wrap patch  -p1 < $SOURCE_DIR/source/breakpad/breakpad-88e5b2c_ppc.patch
-  fi
   wrap make -j${BUILD_THREADS:-4}
   wrap make install
   finalize_package_build $PACKAGE $PACKAGE_VERSION

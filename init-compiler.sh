@@ -31,7 +31,7 @@ set -o pipefail
 if [[ "$OSTYPE" =~ ^linux ]]; then
   # ARCH_FLAGS are used to convey architectur dependent flags that should
   # be obbeyed by libraries explicitly needing this information.
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
      ARCH_FLAGS="-mvsx -maltivec"
   else
      ARCH_FLAGS="-mno-avx2"

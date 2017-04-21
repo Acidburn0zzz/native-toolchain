@@ -30,13 +30,13 @@ if needs_build_package ; then
 
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
-if [[ "$(uname -p)" == "ppc64le" ]]; then
-  echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $THIS_DIR/$PACKAGE-$PACKAGE_VERSION/tests/Makefile.am
-  autoreconf -i
-  wrap ./configure --build=powerpc64le-unknown-linux-gnu -disable-minidebuginfo --with-pic --prefix=$LOCAL_INSTALL
-else
-  wrap ./configure -disable-minidebuginfo --with-pic --prefix=$LOCAL_INSTALL
-fi
+  CONFIGURE_FLAGS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    echo "ppc64_test_altivec_LDADD = \$(LIBUNWIND)" >> $THIS_DIR/$PACKAGE-$PACKAGE_VERSION/tests/Makefile.am
+    autoreconf -i
+    CONFIGURE_FLAGS+="--build=powerpc64le-unknown-linux-gnu"
+  fi
+  wrap ./configure -disable-minidebuginfo --with-pic --prefix=$LOCAL_INSTALL $CONFIGURE_FLAGS
   wrap make -j${BUILD_THREADS:-4} install
 
   finalize_package_build $PACKAGE $PACKAGE_VERSION
