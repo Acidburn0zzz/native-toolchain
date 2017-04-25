@@ -1,0 +1,14 @@
+--- crcutil-440ba7babeff77ffad992df3a10c767f184e946e/autogen.sh	2017-04-24 23:53:37.432021400 -0700
++++ crcutil-440ba7babeff77ffad992df3a10c767f184e946e-ppc/autogen.sh	2017-04-25 00:00:13.066482604 -0700
+@@ -93,6 +93,11 @@
+   crcutil_flags="${crcutil_flags} -msse4.2"
+ fi
+ 
++if [[ "$ARCH_NAME" == "ppc64le" ]]; then
++  crcutil_flags=
++  crcutil_flags="-DCRCUTIL_USE_MM_CRC32=0 -Wall -Icode -Iexamples -Itests -O3"
++fi
++
+ echo>>${target} "AM_CXXFLAGS=${crcutil_flags}"
+ echo>>${target} 'AM_CFLAGS=$(AM_CXXFLAGS)'
+ 

@@ -28,8 +28,11 @@ THIS_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Returns success if Kudu can be built on this platform.
 function is_supported_platform {
   set +u
-  if [[ -z "$OS_NAME" || -z "$OS_VERSION" ]]; then
-    echo OS_NAME and OS_VERSION must be set before calling this script.
+  if [[ -z "$OS_NAME" || -z "$OS_VERSION" || -z "$ARCH_NAME" ]]; then
+    echo OS_NAME, OS_VERSION and ARCH_NAME must be set before calling this script.
+    return 1
+  fi
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
     return 1
   fi
   set -u
@@ -65,44 +68,31 @@ function build {
   prepare $THIS_DIR
 
   cd $THIS_DIR
- 
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
-     git clone https://github.com/ibmsoe/kudu 
-     echo "Building Kudu"  #TODO: uses header here
-  else
-     # Allow overriding of the github URL from the environment - e.g. if we want to build
-     # a hash from a forked repo
-     KUDU_GITHUB_URL=${KUDU_GITHUB_URL:-https://github.com/apache/kudu}
-     download_url ${KUDU_GITHUB_URL}/archive/$PACKAGE_VERSION.tar.gz kudu-$PACKAGE_VERSION.tar.gz
-  fi
+  # Allow overriding of the github URL from the environment - e.g. if we want to build
+  # a hash from a forked repo
+  KUDU_GITHUB_URL=${KUDU_GITHUB_URL:-https://github.com/apache/kudu}
+  download_url ${KUDU_GITHUB_URL}/archive/$PACKAGE_VERSION.tar.gz kudu-$PACKAGE_VERSION.tar.gz
 
   if ! needs_build_package; then
     return
   fi
 
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
-     cd kudu
-     git checkout kudu-ppc
-     echo "Building Kudu"
-  else
-     # If the version is a git hash, the name of the root dir in the archive includes the
-     # full hash even if an abbreviated hash was given through the download URL. The
-     # difference would lead to a mismatch in expected vs actual dir name after extraction.
-     # So the extracted root dir name will be found by inspection.
-     EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$PACKAGE_VERSION.tar.gz)
-     # Removing trailing slash
-     EXTRACTED_DIR_NAME=${EXTRACTED_DIR_NAME%/}
-     if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
-       echo Failed to find the name of the root folder in the Kudu tarball. The search \
-           command output was: "'$EXTRACTED_DIR_NAME'".
-       exit 1
-     fi
-     setup_package_build $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
+  # If the version is a git hash, the name of the root dir in the archive includes the
+  # full hash even if an abbreviated hash was given through the download URL. The
+  # difference would lead to a mismatch in expected vs actual dir name after extraction.
+  # So the extracted root dir name will be found by inspection.
+  EXTRACTED_DIR_NAME=$(tar -tz --exclude='kudu-*/*' -f kudu-$PACKAGE_VERSION.tar.gz)
+  # Removing trailing slash
+  EXTRACTED_DIR_NAME=${EXTRACTED_DIR_NAME%/}
+  if [[ $(wc -l <<< "$EXTRACTED_DIR_NAME") -ne 1 ]]; then
+    echo Failed to find the name of the root folder in the Kudu tarball. The search \
+        command output was: "'$EXTRACTED_DIR_NAME'".
+    exit 1
   fi
+  setup_package_build $PACKAGE $PACKAGE_VERSION kudu-$PACKAGE_VERSION.tar.gz $EXTRACTED_DIR_NAME
   
   # Kudu's dependencies are not in the toolchain. They could be added later.
   cd thirdparty
-
   # For some reason python 2.7 from Kudu's thirdparty doesn't build on CentOS 6. It's
   # not really needed since the toolchain provides python 2.7. To skip the thirdparty
   # build, "python2.7" needs to be in the PATH.
@@ -115,28 +105,13 @@ function build {
   KUDU_TP_PATH="`pwd`/thirdparty/installed/common/bin"
   PATH="$BUILD_DIR/python-2.7.10/bin:$KUDU_TP_PATH:$OLD_PATH"
   
-  ####################building source code on ppc#######################
-  source $SOURCE_DIR/source/kudu/kudu-config.sh
-  if [[ $(uname -p) == 'ppc64le' ]]; then
-    echo "Installing gcc-4.9.3 to build kudu src code on ppc"
-    source $SOURCE_DIR/source/kudu/setup_gcc493.sh
-    source $SOURCE_DIR/source/kudu/kudu-config.sh
-    cd $KUDU_DIR/kudu
-    export CC=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/gcc
-    export CXX=$KUDU_TP_DIR/build/gcc-${KUDU_GCC_VERSION}/bin/g++
-  else
   # The line below configures clang to find gcc from the toolchain. Without this the
   # build will still work on some systems but there will be strange crashes at runtime.
   # On other systems, such as default RHEL6, the build will fail because c++11 isn't
   # supported on the system gcc.
     sed -i -r "s:^(set\(IR_FLAGS):\1\n  --gcc-toolchain=$(dirname $(which $CXX))/..:" \
       src/kudu/codegen/CMakeLists.txt
-  fi
   # Now Kudu can be built.
-  if [[ $(uname -p) == 'ppc64le' ]]; then
-    LOCAL_INSTALL=$SOURCE_DIR/build/kudu
-    BUILD_LOG=$SOURCE_DIR/check/kudu.log
-  fi
     
   RELEASE_INSTALL_DIR="$LOCAL_INSTALL/release"
   mkdir -p release_build_dir
@@ -163,11 +138,8 @@ function build {
   popd
 
   cd $THIS_DIR
-  if [[ "$(uname -p)" != "ppc64le" ]]; then
-     rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
-  fi
+  rm -rf $EXTRACTED_DIR_NAME kudu-$PACKAGE_VERSION.tar.gz
 
-  echo "Kudu build completed" 
   finalize_package_build $PACKAGE $PACKAGE_VERSION
 }
 

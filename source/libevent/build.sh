@@ -31,11 +31,11 @@ if needs_build_package ; then
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
   wrap ./autogen.sh
-if [[ "$(uname -p)" == "ppc64le" ]]; then
-  wrap ./configure --build=powerpc64le-unknown-linux-gnu --prefix=$LOCAL_INSTALL
-else
-  wrap ./configure --prefix=$LOCAL_INSTALL
-fi
+  CONFIGURE_FLAGS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAGS+="--build=powerpc64le-unknown-linux-gnu"
+  fi
+  wrap ./configure --prefix=$LOCAL_INSTALL $CONFIGURE_FLAGS
   wrap make -j${BUILD_THREADS:-4} install
 
   finalize_package_build $PACKAGE $PACKAGE_VERSION

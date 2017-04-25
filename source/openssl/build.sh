@@ -35,17 +35,15 @@ if needs_build_package ; then
     ARCH_FLAGS="linux-x86_64 enable-ec_nistp_64_gcc_128"
   fi
 
-  if [[ "$(uname -p)" == "ppc64le" ]]; then
-    CFLAGS="$CFLAGS -fPIC -DPIC" \
-      CXXFLAGS="$CXXFLAGS -fPIC -DPIC" \
-      wrap perl ./Configure no-asm no-ssl2 no-ssl3 shared zlib \
-        --prefix=$LOCAL_INSTALL $ARCH_FLAGS
-  else
-    CFLAGS="$CFLAGS -fPIC -DPIC" \
-      CXXFLAGS="$CXXFLAGS -fPIC -DPIC" \
-      wrap perl ./Configure no-ssl2 no-ssl3 shared zlib \
-        --prefix=$LOCAL_INSTALL $ARCH_FLAGS
+  CONFIGURE_FLAGS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAGS+="no-asm"
   fi
+  CFLAGS="$CFLAGS -fPIC -DPIC" \
+    CXXFLAGS="$CXXFLAGS -fPIC -DPIC" \
+    wrap perl ./Configure no-ssl2 no-ssl3 shared zlib \
+      --prefix=$LOCAL_INSTALL $ARCH_FLAGS $CONFIGURE_FLAGS
+
   # For some reason, the first build seems to fail sometimes
   wrap make all
   wrap make install
