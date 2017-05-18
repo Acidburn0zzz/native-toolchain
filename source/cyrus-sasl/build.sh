@@ -44,12 +44,17 @@ if needs_build_package ; then
     CONFIGURE_FLAGS+=" --with-bdb-libdir=/usr/lib64/libdb4"
   fi
 
+  CONFIGURE_FLAG_BUILD_SYS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAG_BUILD_SYS="--build=powerpc64le-unknown-linux-gnu"
+  fi
+
   # Disable everything except those protocols needed -- currently just Kerberos.
   # Sasl does not have a --with-pic configuration.
   CFLAGS="$CFLAGS -fPIC -DPIC" CXXFLAGS="$CXXFLAGS -fPIC -DPIC" wrap ./configure \
     --disable-sql --disable-otp --disable-ldap --disable-digest --with-saslauthd=no \
     $CONFIGURE_FLAGS \
-    --prefix=$LOCAL_INSTALL --enable-static --enable-staticdlopen $WITH_FRAMEWORKS
+    --prefix=$LOCAL_INSTALL --enable-static --enable-staticdlopen $WITH_FRAMEWORKS $CONFIGURE_FLAG_BUILD_SYS
   # the first time you do a make it fails, build again.
   wrap make || /bin/true
   wrap make -j${BUILD_THREADS:-4}

@@ -18,6 +18,7 @@ set -u
 set -o pipefail
 
 # This script exports the following environment variables:
+#  - ARCH_NAME
 #  - AUTOCONF_VERSION
 #  - AUTOMAKE_VERSION
 #  - BINUTILS_VERSION
@@ -167,6 +168,10 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   # errors on OS X wrt rpath settings and libary dependencies.
   export MACOSX_DEPLOYMENT_TARGET=$(echo $OS_VERSION | sed -E 's/(10.[0-9]+).*/\1/')
 fi
+
+#Set Architecture of the platform
+ARCH_NAME=`uname -p`
+export ARCH_NAME
 
 if [[ $SYSTEM_GCC -eq 0 ]]; then
   COMPILER="gcc"
