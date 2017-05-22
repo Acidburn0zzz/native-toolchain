@@ -30,7 +30,11 @@ if needs_build_package ; then
 
   setup_package_build $PACKAGE $PACKAGE_VERSION
 
-  wrap ./configure --enable-slapd=no --enable-static --with-pic --prefix=$LOCAL_INSTALL
+  CONFIGURE_FLAG_BUILD_SYS=
+  if [[ "$ARCH_NAME" == "ppc64le" ]]; then
+    CONFIGURE_FLAG_BUILD_SYS="--build=powerpc64le-unknown-linux-gnu"
+  fi
+  wrap ./configure --enable-slapd=no --enable-static --with-pic --prefix=$LOCAL_INSTALL $CONFIGURE_FLAG_BUILD_SYS
   wrap make -j${BUILD_THREADS:-4} install
   wrap make -j${BUILD_THREADS:-4} depend
   wrap make -j${BUILD_THREADS:-4} install
