@@ -102,7 +102,11 @@ LIBEV_VERSION=4.20 $SOURCE_DIR/source/libev/build.sh
 ################################################################################
 # Build crcutil
 ################################################################################
-CRCUTIL_VERSION=440ba7babeff77ffad992df3a10c767f184e946e\
+if (( BUILD_HISTORICAL )) ; then
+  CRCUTIL_VERSION=440ba7babeff77ffad992df3a10c767f184e946e\
+    $SOURCE_DIR/source/crcutil/build.sh
+fi
+CRCUTIL_VERSION=440ba7babeff77ffad992df3a10c767f184e946e-p1\
   $SOURCE_DIR/source/crcutil/build.sh
 
 ################################################################################
@@ -151,7 +155,7 @@ export -n OPENSSL_VERSION
 if (( BUILD_HISTORICAL )); then
     GFLAGS_VERSION=2.0 $SOURCE_DIR/source/gflags/build.sh
 fi
-GFLAGS_VERSION=2.2.0 $SOURCE_DIR/source/gflags/build.sh
+GFLAGS_VERSION=2.2.0-p1 $SOURCE_DIR/source/gflags/build.sh
 
 ################################################################################
 # Build gperftools
@@ -174,7 +178,7 @@ if (( BUILD_HISTORICAL )) ; then
   fi
 fi
 
-GFLAGS_VERSION=2.2.0 GLOG_VERSION=0.3.4-p2 $SOURCE_DIR/source/glog/build.sh
+GFLAGS_VERSION=2.2.0-p1 GLOG_VERSION=0.3.4-p2 $SOURCE_DIR/source/glog/build.sh
 
 ################################################################################
 # Build gtest
@@ -247,7 +251,10 @@ fi
 ################################################################################
 # Build Libunwind
 ################################################################################
-LIBUNWIND_VERSION=1.1 $SOURCE_DIR/source/libunwind/build.sh
+if (( BUILD_HISTORICAL )) ; then
+  LIBUNWIND_VERSION=1.1 $SOURCE_DIR/source/libunwind/build.sh
+fi
+LIBUNWIND_VERSION=1.1-p1 $SOURCE_DIR/source/libunwind/build.sh
 
 ################################################################################
 # Build Breakpad
@@ -255,7 +262,7 @@ LIBUNWIND_VERSION=1.1 $SOURCE_DIR/source/libunwind/build.sh
 if (( BUILD_HISTORICAL )); then
   BREAKPAD_VERSION=20150612-p1 $SOURCE_DIR/source/breakpad/build.sh
 fi
-BREAKPAD_VERSION=88e5b2c8806bac3f2c80d2fe80094be5bd371601-p2 $SOURCE_DIR/source/breakpad/build.sh
+BREAKPAD_VERSION=ffe3e478657dc7126fca6329dfcedc49f4c726d9-p2 $SOURCE_DIR/source/breakpad/build.sh
 
 ################################################################################
 # Build Flatbuffers
@@ -267,7 +274,7 @@ FLATBUFFERS_VERSION=1.6.0 $SOURCE_DIR/source/flatbuffers/build.sh
 ################################################################################
 (
   export BOOST_VERSION=1.57.0-p1
-  export KUDU_VERSION=238249c
+  export KUDU_VERSION=7533364
   if $SOURCE_DIR/source/kudu/build.sh is_supported_platform; then
     $SOURCE_DIR/source/kudu/build.sh build
   else
